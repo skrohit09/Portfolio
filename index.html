@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <style>
         :root {
             --bg: #fafaf9;
@@ -16,6 +17,8 @@
             --accent: #0a0a0a;
             --card-bg: #ffffff;
             --shadow: rgba(0, 0, 0, 0.03);
+            --code-bg: #1e1e1e;
+            --overlay-bg: rgba(0, 0, 0, 0.6);
         }
 
         * {
@@ -128,15 +131,10 @@
             background: var(--card-bg);
             padding: 32px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
         }
 
         .repo-card:hover {
             background: var(--bg);
-            transform: translateX(4px);
         }
 
         .repo-header {
@@ -183,11 +181,205 @@
             display: inline-block;
         }
 
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
+        .repo-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay-bg);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 1200px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
             color: var(--text-secondary);
-            font-size: 14px;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-tree {
+            width: 280px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+
+        .file-tree-item {
+            padding: 10px 24px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-tree-item:hover {
+            background: var(--bg);
+        }
+
+        .file-tree-item.active {
+            background: var(--bg);
+            font-weight: 400;
+        }
+
+        .file-icon {
+            width: 16px;
+            text-align: center;
+        }
+
+        .code-viewer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .code-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+        }
+
+        .code-filename {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .code-content {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--code-bg);
+        }
+
+        .code-content pre {
+            margin: 0;
+            padding: 24px;
+            background: transparent;
+        }
+
+        .code-content code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: var(--text-secondary);
         }
 
         .spinner {
@@ -205,10 +397,17 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error {
+        .error-message {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .loading {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
+            font-size: 14px;
         }
 
         footer {
@@ -246,6 +445,25 @@
 
             .repo-card {
                 padding: 24px;
+            }
+
+            .modal {
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .file-tree {
+                width: 100%;
+                max-height: 200px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .modal-header {
+                padding: 20px;
             }
         }
     </style>
@@ -290,11 +508,38 @@
         </footer>
     </div>
 
+    <!-- Code Viewer Modal -->
+    <div class="modal-overlay" id="codeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalRepoName">Repository</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="file-tree" id="fileTree">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                <div class="code-viewer">
+                    <div class="code-header">
+                        <div class="code-filename" id="currentFilename">Select a file</div>
+                        <a id="githubFileLink" href="#" target="_blank" class="btn" style="display: none;">View on GitHub</a>
+                    </div>
+                    <div class="code-content" id="codeContent">
+                        <div class="error-message">Select a file to view its contents</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>
         const GITHUB_USERNAME = 'skrohit09';
         const GITHUB_API = `https://api.github.com`;
+        let currentRepo = null;
 
-        // Language colors
         const languageColors = {
             'JavaScript': '#f1e05a',
             'Python': '#3572A5',
@@ -318,18 +563,15 @@
 
         async function fetchGitHubData() {
             try {
-                // Fetch user profile
                 const userResponse = await fetch(`${GITHUB_API}/users/${GITHUB_USERNAME}`);
                 const userData = await userResponse.json();
 
-                // Update profile info
                 document.getElementById('userName').textContent = userData.name || userData.login;
                 document.getElementById('userBio').textContent = userData.bio || 'Building things on the internet.';
                 document.getElementById('repoCount').textContent = userData.public_repos;
                 document.getElementById('followerCount').textContent = userData.followers;
                 document.getElementById('followingCount').textContent = userData.following;
 
-                // Fetch repositories
                 const reposResponse = await fetch(`${GITHUB_API}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`);
                 const repos = await reposResponse.json();
 
@@ -337,7 +579,7 @@
             } catch (error) {
                 console.error('Error fetching GitHub data:', error);
                 document.getElementById('reposContainer').innerHTML = `
-                    <div class="error">
+                    <div class="error-message">
                         <p>Unable to load repositories. Please try again later.</p>
                     </div>
                 `;
@@ -356,11 +598,8 @@
             reposGrid.className = 'repos-grid';
 
             repos.forEach(repo => {
-                const card = document.createElement('a');
+                const card = document.createElement('div');
                 card.className = 'repo-card';
-                card.href = repo.html_url;
-                card.target = '_blank';
-                card.rel = 'noopener noreferrer';
 
                 const metaItems = [];
                 
@@ -400,6 +639,10 @@
                     </div>
                     ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
                     ${metaItems.length > 0 ? `<div class="repo-meta">${metaItems.join('')}</div>` : ''}
+                    <div class="repo-actions">
+                        <button class="btn btn-primary" onclick="viewRepoCode('${repo.name}', '${repo.default_branch}')">View Code</button>
+                        <a href="${repo.html_url}" target="_blank" class="btn">GitHub</a>
+                    </div>
                 `;
 
                 reposGrid.appendChild(card);
@@ -409,7 +652,137 @@
             container.appendChild(reposGrid);
         }
 
-        // Load data on page load
+        async function viewRepoCode(repoName, defaultBranch) {
+            currentRepo = { name: repoName, branch: defaultBranch };
+            document.getElementById('modalRepoName').textContent = repoName;
+            document.getElementById('codeModal').classList.add('active');
+            document.getElementById('fileTree').innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+            document.getElementById('codeContent').innerHTML = '<div class="error-message">Select a file to view its contents</div>';
+            document.getElementById('currentFilename').textContent = 'Select a file';
+            document.getElementById('githubFileLink').style.display = 'none';
+
+            try {
+                const response = await fetch(`${GITHUB_API}/repos/${GITHUB_USERNAME}/${repoName}/git/trees/${defaultBranch}?recursive=1`);
+                const data = await response.json();
+                
+                if (data.tree) {
+                    displayFileTree(data.tree, repoName);
+                } else {
+                    document.getElementById('fileTree').innerHTML = '<div class="error-message">No files found</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching repository tree:', error);
+                document.getElementById('fileTree').innerHTML = '<div class="error-message">Failed to load files</div>';
+            }
+        }
+
+        function displayFileTree(tree, repoName) {
+            const fileTree = document.getElementById('fileTree');
+            fileTree.innerHTML = '';
+
+            // Filter and sort files
+            const files = tree.filter(item => item.type === 'blob').sort((a, b) => a.path.localeCompare(b.path));
+
+            files.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-tree-item';
+                
+                const icon = getFileIcon(file.path);
+                item.innerHTML = `<span class="file-icon">${icon}</span><span>${file.path}</span>`;
+                
+                item.onclick = () => loadFileContent(repoName, file.path, item);
+                fileTree.appendChild(item);
+            });
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'js': '📜',
+                'py': '🐍',
+                'html': '🌐',
+                'css': '🎨',
+                'json': '📋',
+                'md': '📝',
+                'txt': '📄',
+                'java': '☕',
+                'cpp': '⚙️',
+                'c': '⚙️',
+                'go': '🔵',
+                'rs': '🦀',
+                'ts': '📘',
+                'jsx': '⚛️',
+                'tsx': '⚛️',
+                'vue': '💚',
+                'php': '🐘',
+                'rb': '💎',
+                'sh': '🔧'
+            };
+            return icons[ext] || '📄';
+        }
+
+        async function loadFileContent(repoName, filePath, element) {
+            // Update active state
+            document.querySelectorAll('.file-tree-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            document.getElementById('currentFilename').textContent = filePath;
+            document.getElementById('codeContent').innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+
+            const githubLink = document.getElementById('githubFileLink');
+            githubLink.href = `https://github.com/${GITHUB_USERNAME}/${repoName}/blob/${currentRepo.branch}/${filePath}`;
+            githubLink.style.display = 'inline-block';
+
+            try {
+                const response = await fetch(`${GITHUB_API}/repos/${GITHUB_USERNAME}/${repoName}/contents/${filePath}`);
+                const data = await response.json();
+
+                if (data.content) {
+                    const content = atob(data.content);
+                    displayCode(content, filePath);
+                } else {
+                    document.getElementById('codeContent').innerHTML = '<div class="error-message">File is too large to display</div>';
+                }
+            } catch (error) {
+                console.error('Error loading file:', error);
+                document.getElementById('codeContent').innerHTML = '<div class="error-message">Failed to load file content</div>';
+            }
+        }
+
+        function displayCode(content, filename) {
+            const codeContent = document.getElementById('codeContent');
+            const ext = filename.split('.').pop().toLowerCase();
+            
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            code.className = `language-${ext}`;
+            code.textContent = content;
+            
+            pre.appendChild(code);
+            codeContent.innerHTML = '';
+            codeContent.appendChild(pre);
+
+            hljs.highlightElement(code);
+        }
+
+        function closeModal() {
+            document.getElementById('codeModal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.getElementById('codeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
         fetchGitHubData();
     </script>
 </body>
