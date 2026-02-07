@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rohit SK - Developer Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fafaf9;
+            --text: #1c1917;
+            --text-secondary: #57534e;
+            --border: #e7e5e4;
+            --accent: #0a0a0a;
+            --card-bg: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-weight: 300;
+            letter-spacing: -0.01em;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        header {
+            margin-bottom: 80px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            letter-spacing: 0.05em;
+        }
+
+        .bio {
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 24px;
+            line-height: 1.8;
+        }
+
+        .stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 400;
+            font-family: 'Crimson Pro', serif;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-weight: 400;
+        }
+
+        .repos-grid {
+            display: grid;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+        }
+
+        .repo-card {
+            background: var(--card-bg);
+            padding: 32px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .repo-card:hover {
+            background: var(--bg);
+            transform: translateX(4px);
+        }
+
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        .repo-name {
+            font-family: 'Crimson Pro', serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .repo-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .repo-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .language-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .spinner {
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .github-link {
+            color: var(--text);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+
+        .github-link:hover {
+            border-color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 60px 20px;
+            }
+
+            header {
+                margin-bottom: 60px;
+            }
+
+            .stats {
+                gap: 24px;
+            }
+
+            .repo-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="userName">Loading...</h1>
+            <div class="subtitle">Developer</div>
+            <div class="bio" id="userBio">Fetching profile information...</div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="repoCount">—</div>
+                    <div class="stat-label">Repositories</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="followerCount">—</div>
+                    <div class="stat-label">Followers</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="followingCount">—</div>
+                    <div class="stat-label">Following</div>
+                </div>
+            </div>
+        </header>
+
+        <section>
+            <h2 class="section-title">Projects</h2>
+            <div id="reposContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Syncing with GitHub...
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>
+                Synced with <a href="https://github.com/skrohit09" target="_blank" rel="noopener" class="github-link">@skrohit09</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const GITHUB_USERNAME = 'skrohit09';
+        const GITHUB_API = `https://api.github.com`;
+
+        // Language colors
+        const languageColors = {
+            'JavaScript': '#f1e05a',
+            'Python': '#3572A5',
+            'Java': '#b07219',
+            'TypeScript': '#2b7489',
+            'HTML': '#e34c26',
+            'CSS': '#563d7c',
+            'C++': '#f34b7d',
+            'C': '#555555',
+            'Go': '#00ADD8',
+            'Rust': '#dea584',
+            'PHP': '#4F5D95',
+            'Ruby': '#701516',
+            'Swift': '#ffac45',
+            'Kotlin': '#A97BFF',
+            'Dart': '#00B4AB',
+            'Shell': '#89e051',
+            'Vue': '#41b883',
+            'React': '#61dafb'
+        };
+
+        async function fetchGitHubData() {
+            try {
+                // Fetch user profile
+                const userResponse = await fetch(`${GITHUB_API}/users/${GITHUB_USERNAME}`);
+                const userData = await userResponse.json();
+
+                // Update profile info
+                document.getElementById('userName').textContent = userData.name || userData.login;
+                document.getElementById('userBio').textContent = userData.bio || 'Building things on the internet.';
+                document.getElementById('repoCount').textContent = userData.public_repos;
+                document.getElementById('followerCount').textContent = userData.followers;
+                document.getElementById('followingCount').textContent = userData.following;
+
+                // Fetch repositories
+                const reposResponse = await fetch(`${GITHUB_API}/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`);
+                const repos = await reposResponse.json();
+
+                displayRepositories(repos);
+            } catch (error) {
+                console.error('Error fetching GitHub data:', error);
+                document.getElementById('reposContainer').innerHTML = `
+                    <div class="error">
+                        <p>Unable to load repositories. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayRepositories(repos) {
+            const container = document.getElementById('reposContainer');
+            
+            if (repos.length === 0) {
+                container.innerHTML = '<div class="loading">No repositories found.</div>';
+                return;
+            }
+
+            const reposGrid = document.createElement('div');
+            reposGrid.className = 'repos-grid';
+
+            repos.forEach(repo => {
+                const card = document.createElement('a');
+                card.className = 'repo-card';
+                card.href = repo.html_url;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+
+                const metaItems = [];
+                
+                if (repo.language) {
+                    const color = languageColors[repo.language] || '#858585';
+                    metaItems.push(`
+                        <div class="meta-item">
+                            <span class="language-dot" style="background-color: ${color}"></span>
+                            <span>${repo.language}</span>
+                        </div>
+                    `);
+                }
+
+                if (repo.stargazers_count > 0) {
+                    metaItems.push(`
+                        <div class="meta-item">
+                            <span>⭐</span>
+                            <span>${repo.stargazers_count}</span>
+                        </div>
+                    `);
+                }
+
+                if (repo.forks_count > 0) {
+                    metaItems.push(`
+                        <div class="meta-item">
+                            <span>🔱</span>
+                            <span>${repo.forks_count}</span>
+                        </div>
+                    `);
+                }
+
+                card.innerHTML = `
+                    <div class="repo-header">
+                        <div>
+                            <div class="repo-name">${repo.name}</div>
+                        </div>
+                    </div>
+                    ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
+                    ${metaItems.length > 0 ? `<div class="repo-meta">${metaItems.join('')}</div>` : ''}
+                `;
+
+                reposGrid.appendChild(card);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(reposGrid);
+        }
+
+        // Load data on page load
+        fetchGitHubData();
+    </script>
+</body>
+</html>
