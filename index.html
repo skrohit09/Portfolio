@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rohit SK - Developer Portfolio</title>
+    <title>Rohit SK - Automation Engineer Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Crimson+Pro:wght@400;600&display=swap" rel="stylesheet">
@@ -304,20 +304,21 @@
         }
 
         .file-tree {
-            width: 280px;
+            width: 320px;
             border-right: 1px solid var(--border);
             overflow-y: auto;
             padding: 16px 0;
         }
 
         .file-tree-item {
-            padding: 10px 24px;
+            padding: 8px 12px;
             cursor: pointer;
             font-size: 13px;
             transition: background 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
+            user-select: none;
         }
 
         .file-tree-item:hover {
@@ -329,7 +330,51 @@
             font-weight: 400;
         }
 
+        .file-tree-item.file {
+            padding-left: 12px;
+        }
+
+        .folder-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            user-select: none;
+        }
+
+        .folder-item:hover {
+            background: var(--bg);
+        }
+
+        .folder-children {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .folder-children.expanded {
+            display: block;
+        }
+
+        .folder-toggle {
+            width: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .folder-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
         .file-icon {
+            width: 16px;
+            text-align: center;
+        }
+
+        .folder-icon {
             width: 16px;
             text-align: center;
         }
@@ -457,7 +502,7 @@
 
             .file-tree {
                 width: 100%;
-                max-height: 200px;
+                max-height: 250px;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
             }
@@ -680,18 +725,93 @@
             const fileTree = document.getElementById('fileTree');
             fileTree.innerHTML = '';
 
-            // Filter and sort files
-            const files = tree.filter(item => item.type === 'blob').sort((a, b) => a.path.localeCompare(b.path));
+            // Build folder structure
+            const root = {};
+            
+            tree.filter(item => item.type === 'blob').forEach(file => {
+                const parts = file.path.split('/');
+                let current = root;
+                
+                // Create folder structure
+                for (let i = 0; i < parts.length - 1; i++) {
+                    const folderName = parts[i];
+                    if (!current[folderName]) {
+                        current[folderName] = {};
+                    }
+                    current = current[folderName];
+                }
+                
+                // Add file to the deepest folder
+                const fileName = parts[parts.length - 1];
+                current[fileName] = file.path;
+            });
 
-            files.forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'file-tree-item';
+            // Render tree
+            renderTreeNode(root, fileTree, repoName, 0);
+        }
+
+        function renderTreeNode(node, container, repoName, level) {
+            const entries = Object.entries(node).sort((a, b) => {
+                // Folders first, then files
+                const aIsFile = typeof a[1] === 'string';
+                const bIsFile = typeof b[1] === 'string';
+                if (aIsFile !== bIsFile) return aIsFile ? 1 : -1;
+                return a[0].localeCompare(b[0]);
+            });
+
+            entries.forEach(([name, value]) => {
+                const isFile = typeof value === 'string';
                 
-                const icon = getFileIcon(file.path);
-                item.innerHTML = `<span class="file-icon">${icon}</span><span>${file.path}</span>`;
-                
-                item.onclick = () => loadFileContent(repoName, file.path, item);
-                fileTree.appendChild(item);
+                if (isFile) {
+                    // Render file
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-tree-item file';
+                    fileItem.style.paddingLeft = `${12 + level * 20}px`;
+                    
+                    const icon = getFileIcon(name);
+                    fileItem.innerHTML = `<span class="file-icon">${icon}</span><span>${name}</span>`;
+                    
+                    fileItem.onclick = () => loadFileContent(repoName, value, fileItem);
+                    container.appendChild(fileItem);
+                } else {
+                    // Render folder
+                    const folderItem = document.createElement('div');
+                    folderItem.className = 'folder-item';
+                    folderItem.style.paddingLeft = `${12 + level * 20}px`;
+                    
+                    const folderId = `folder-${Math.random().toString(36).substr(2, 9)}`;
+                    folderItem.innerHTML = `
+                        <span class="folder-toggle">▶</span>
+                        <span class="folder-icon">📁</span>
+                        <span>${name}</span>
+                    `;
+                    
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'folder-children';
+                    childrenContainer.id = folderId;
+                    
+                    folderItem.onclick = (e) => {
+                        e.stopPropagation();
+                        const toggle = folderItem.querySelector('.folder-toggle');
+                        const children = document.getElementById(folderId);
+                        
+                        if (children.classList.contains('expanded')) {
+                            children.classList.remove('expanded');
+                            toggle.classList.remove('expanded');
+                            folderItem.querySelector('.folder-icon').textContent = '📁';
+                        } else {
+                            children.classList.add('expanded');
+                            toggle.classList.add('expanded');
+                            folderItem.querySelector('.folder-icon').textContent = '📂';
+                        }
+                    };
+                    
+                    container.appendChild(folderItem);
+                    container.appendChild(childrenContainer);
+                    
+                    // Recursively render children
+                    renderTreeNode(value, childrenContainer, repoName, level + 1);
+                }
             });
         }
 
